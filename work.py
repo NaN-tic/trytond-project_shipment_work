@@ -38,18 +38,30 @@ class ShipmentWork:
 
         super(ShipmentWork, cls).__register__(module_name)
 
+
 class Project:
     'Work Project'
-    __name__ = 'work.project'
+    __name__ = 'project.work'
     __metaclass__ = PoolMeta
 
     shipments = fields.One2Many('shipment.work', 'project', 'Shipment Works')
 
-
     @classmethod
     def _get_cost(cls, works):
-        pass
+        costs = super(Project, cls)._get_cost(works)
+        for work in works:
+            for shipment in work.shipments:
+                if shipment.state != 'done':
+                    continue
+                costs[work.id] += shipment.cost
+        return costs
 
-
-    #TODO: modify function to add cost, and invoiced amount.
-
+    @classmethod
+    def _get_revenue(cls, works):
+        revenues = super(Project, cls)._get_revenue(works)
+        for work in works:
+            for shipment in work.shipments:
+                if shipment.state != 'done':
+                    continue
+                revenues[work.id] += shipment.revenue
+        return revenues
