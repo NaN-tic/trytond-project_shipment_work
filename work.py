@@ -1,23 +1,18 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
-import datetime
-from decimal import Decimal
-from itertools import izip, chain
-from sql.aggregate import Sum
-
-from trytond.model import Workflow, ModelSQL, ModelView, fields, Unique
-from trytond.pool import Pool, PoolMeta
+from trytond.model import fields
+from trytond.pool import PoolMeta
 from trytond.pyson import Eval, If, Bool
-from trytond.transaction import Transaction
-from trytond.tools import grouped_slice, reduce_ids
 from trytond import backend
 
 __all__ = ['Project', 'ShipmentWork']
+
 
 class ShipmentWork:
     __name__ = 'shipment.work'
     __metaclass__ = PoolMeta
 
+    #TODO: Change for origin
     project = fields.Many2One('project.work', 'Project',
         domain=[
             ('party', '=', Eval('party')),
@@ -37,6 +32,15 @@ class ShipmentWork:
             table.column_rename('project', 'work_project')
 
         super(ShipmentWork, cls).__register__(module_name)
+
+    @classmethod
+    def __setup__(cls):
+        super(ShipmentWork, cls).__setup__()
+        if hasattr(cls, 'asset'):
+            if 'asset' not in cls.project.depends:
+                cls.project.domain.append(If(Bool(Eval('asset')),
+                    ('asset', '=', Eval('asset')), ()))
+                cls.project.depends.append('asset')
 
 
 class Project:
