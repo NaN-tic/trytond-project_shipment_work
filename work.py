@@ -12,15 +12,6 @@ class ShipmentWork:
     __name__ = 'shipment.work'
     __metaclass__ = PoolMeta
 
-    #TODO: Change for origin
-    project = fields.Many2One('project.work', 'Project',
-        domain=[
-            ('party', '=', Eval('party')),
-            ],
-        states={
-            'readonly': Eval('state').in_(['checked', 'cancel']),
-            },
-        depends=['state', 'party'])
 
     @classmethod
     def __register__(cls, module_name):
@@ -34,21 +25,16 @@ class ShipmentWork:
         super(ShipmentWork, cls).__register__(module_name)
 
     @classmethod
-    def __setup__(cls):
-        super(ShipmentWork, cls).__setup__()
-        if hasattr(cls, 'asset'):
-            if 'asset' not in cls.project.depends:
-                cls.project.domain.append(If(Bool(Eval('asset')),
-                    ('asset', '=', Eval('asset')), ()))
-                cls.project.depends.append('asset')
-
+    def _get_origin(cls):
+        res = super(ShipmentWork, cls)._get_origin()
+        return res + ['project.work']
 
 class Project:
     'Work Project'
     __name__ = 'project.work'
     __metaclass__ = PoolMeta
 
-    shipments = fields.One2Many('shipment.work', 'project', 'Shipment Works')
+    shipments = fields.One2Many('shipment.work', 'origin', 'Shipment Works')
 
     @classmethod
     def _get_cost(cls, works):
