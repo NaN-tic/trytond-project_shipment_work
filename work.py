@@ -2,7 +2,7 @@
 # copyright notices and license terms.
 from trytond.model import fields
 from trytond.pool import PoolMeta
-from trytond.pyson import Eval, If, Bool
+from trytond.pyson import Eval
 from trytond import backend
 
 __all__ = ['Project', 'ShipmentWork']
@@ -11,7 +11,6 @@ __all__ = ['Project', 'ShipmentWork']
 class ShipmentWork:
     __name__ = 'shipment.work'
     __metaclass__ = PoolMeta
-
 
     @classmethod
     def __register__(cls, module_name):
@@ -29,12 +28,25 @@ class ShipmentWork:
         res = super(ShipmentWork, cls)._get_origin()
         return res + ['project.work']
 
+
 class Project:
     'Work Project'
     __name__ = 'project.work'
     __metaclass__ = PoolMeta
+    project_party = fields.Function(fields.Many2One('party.party',
+            'Project Party'),
+        'on_change_with_project_party')
+    shipments = fields.One2Many('shipment.work', 'origin', 'Shipment Works',
+        domain=[
+            ('party', '=', Eval('project_party', -1)),
+            ], depends=['project_party'])
 
-    shipments = fields.One2Many('shipment.work', 'origin', 'Shipment Works')
+    @fields.depends('type', 'party', 'parent')
+    def on_change_with_project_party(self, name=None):
+        if self.type == 'project':
+            return self.party.id if self.party else None
+        elif self.parent:
+            return self.parent.on_change_with_project_party(name=name)
 
     @classmethod
     def _get_cost(cls, works):
