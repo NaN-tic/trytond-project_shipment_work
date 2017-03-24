@@ -32,9 +32,7 @@ class Project:
             'Project Party'),
         'on_change_with_project_party')
     shipments = fields.One2Many('shipment.work', 'origin', 'Shipment Works',
-        domain=[
-            ('party', '=', Eval('project_party', -1)),
-            ], depends=['project_party'])
+        readonly=True)
 
     @fields.depends('type', 'party', 'parent')
     def on_change_with_project_party(self, name=None):
