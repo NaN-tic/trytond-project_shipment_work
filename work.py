@@ -15,6 +15,14 @@ class ShipmentWork:
     def _get_origin(cls):
         return super(ShipmentWork, cls)._get_origin() + ['project.work']
 
+    @classmethod
+    def __setup__(cls):
+        super(ShipmentWork, cls).__setup__()
+
+        if hasattr(cls, 'asset'):
+            cls.origin.domain = [('asset', '=', Eval('asset'))]
+
+
 
 class Project:
     'Work Project'
