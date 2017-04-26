@@ -1,0 +1,15 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "field:project.work,shipments:"
+msgid "Shipment Works"
+msgstr "Albarans de treball"
+
+msgctxt "model:ir.action,name:act_work_shipments"
+msgid "Shipments Work"
+msgstr "Albarans de treball"
+
+msgctxt "view:project.work:"
+msgid "Shipments"
+msgstr "Albarans"

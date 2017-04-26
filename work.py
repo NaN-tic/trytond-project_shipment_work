@@ -3,7 +3,6 @@
 from trytond.model import fields
 from trytond.pool import PoolMeta
 from trytond.pyson import Eval
-from trytond import backend
 
 __all__ = ['Project', 'ShipmentWork']
 
@@ -13,20 +12,16 @@ class ShipmentWork:
     __metaclass__ = PoolMeta
 
     @classmethod
-    def __register__(cls, module_name):
-        TableHandler = backend.get('TableHandler')
-        table = TableHandler(cls, module_name)
-
-        # migration from v3.4
-        if table.column_exist('project'):
-            table.column_rename('project', 'work_project')
-
-        super(ShipmentWork, cls).__register__(module_name)
+    def _get_origin(cls):
+        return super(ShipmentWork, cls)._get_origin() + ['project.work']
 
     @classmethod
-    def _get_origin(cls):
-        res = super(ShipmentWork, cls)._get_origin()
-        return res + ['project.work']
+    def __setup__(cls):
+        super(ShipmentWork, cls).__setup__()
+
+        if hasattr(cls, 'asset'):
+            cls.origin.domain = [('asset', '=', Eval('asset'))]
+
 
 
 class Project:
@@ -37,9 +32,7 @@ class Project:
             'Project Party'),
         'on_change_with_project_party')
     shipments = fields.One2Many('shipment.work', 'origin', 'Shipment Works',
-        domain=[
-            ('party', '=', Eval('project_party', -1)),
-            ], depends=['project_party'])
+        readonly=True)
 
     @fields.depends('type', 'party', 'parent')
     def on_change_with_project_party(self, name=None):
